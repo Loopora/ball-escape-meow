@@ -2,6 +2,10 @@
 const canvas=document.getElementById('game');
 const ctx=canvas.getContext('2d');
 const ui={count:document.getElementById('count'),escapes:document.getElementById('escapes'),toggle:document.getElementById('toggle'),reset:document.getElementById('reset'),speed:document.getElementById('speed'),gap:document.getElementById('gap'),rotation:document.getElementById('rotation'),limit:document.getElementById('limit'),sound:document.getElementById('sound')};
+const stage=document.getElementById('stage');
+const stageToggle=document.getElementById('stageToggle');
+const fullscreenButton=document.getElementById('fullscreen');
+const fullscreenMain=document.getElementById('fullscreenMain');
 const TAU=Math.PI*2;
 let width=360,height=480,cx=180,cy=240,radius=130;
 let balls=[],particles=[],escapes=0,angle=0,playing=true,lastTime=0,accumulator=0;
@@ -14,6 +18,10 @@ function angleDifference(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b));}
 const meowAudio=new Audio('meow.wav');
 meowAudio.preload='auto';
 let lastSound=0;
+let audioUnlocked=false;
+function unlockAudio(){if(audioUnlocked)return;meowAudio.volume=0;const attempt=meowAudio.play();if(attempt)attempt.then(()=>{meowAudio.pause();meowAudio.currentTime=0;meowAudio.volume=.65;audioUnlocked=true;}).catch(()=>{meowAudio.volume=.65;});}
+document.addEventListener('pointerdown',unlockAudio,{passive:true});
+document.addEventListener('keydown',unlockAudio);
 function meow(){
  if(!ui.sound.checked)return;
  const now=performance.now();
@@ -28,6 +36,11 @@ balls=next.slice(0,limit);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.
 function draw(){const bg=ctx.createRadialGradient(cx,cy,10,cx,cy,radius*2.5);bg.addColorStop(0,'#172342');bg.addColorStop(1,'#090e1b');ctx.fillStyle=bg;ctx.fillRect(0,0,width,height);ctx.save();ctx.translate(cx,cy);ctx.beginPath();ctx.arc(0,0,radius,0,TAU);ctx.fillStyle='rgba(30,60,100,.13)';ctx.fill();ctx.beginPath();ctx.arc(0,0,radius,angle+gap/2,angle+TAU-gap/2);ctx.strokeStyle='#47e5fa';ctx.lineWidth=6;ctx.lineCap='round';ctx.shadowColor='#00dfff';ctx.shadowBlur=17;ctx.stroke();ctx.shadowBlur=0;for(const b of balls){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fillStyle=`hsl(${b.hue} 95% 65%)`;ctx.shadowColor=`hsl(${b.hue} 100% 55%)`;ctx.shadowBlur=12;ctx.fill();}ctx.shadowBlur=0;for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/.55);ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,TAU);ctx.fillStyle=`hsl(${p.hue} 100% 70%)`;ctx.fill();}ctx.globalAlpha=1;ctx.restore();}
 function animate(timestamp){const delta=Math.min((timestamp-lastTime)/1000||0,.04);lastTime=timestamp;if(playing){accumulator+=delta*speed;let iterations=0;while(accumulator>=1/120&&iterations<12){step(1/120);accumulator-=1/120;iterations++;}if(iterations===12)accumulator=0;}draw();requestAnimationFrame(animate);}
 ui.sound.addEventListener('change',()=>{if(ui.sound.checked){meowAudio.play().then(()=>{meowAudio.pause();meowAudio.currentTime=0;}).catch(()=>{});}});
-ui.toggle.addEventListener('click',()=>{playing=!playing;ui.toggle.textContent=playing?'Pause':'Play';});ui.reset.addEventListener('click',reset);
+function togglePlaying(){playing=!playing;ui.toggle.textContent=playing?'⏸ Pause':'▶ Resume';stageToggle.textContent=playing?'⏸ Pause':'▶ Resume';stageToggle.setAttribute('aria-label',playing?'Pause game':'Resume game');}
+ui.toggle.addEventListener('click',togglePlaying);stageToggle.addEventListener('click',togglePlaying);ui.reset.addEventListener('click',reset);
+async function toggleFullscreen(){try{if(document.fullscreenElement){await document.exitFullscreen();}else if(stage.requestFullscreen){await stage.requestFullscreen();}else{stage.classList.toggle('fullscreen-fallback');}resize();}catch(e){console.warn('Fullscreen unavailable',e);stage.classList.toggle('fullscreen-fallback');resize();}}
+fullscreenButton.addEventListener('click',toggleFullscreen);fullscreenMain.addEventListener('click',toggleFullscreen);
+document.addEventListener('fullscreenchange',()=>{const active=Boolean(document.fullscreenElement)||stage.classList.contains('fullscreen-fallback');fullscreenButton.textContent=active?'⤢ Exit fullscreen':'⛶ Fullscreen';fullscreenMain.textContent=fullscreenButton.textContent;resize();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&stage.classList.contains('fullscreen-fallback')){stage.classList.remove('fullscreen-fallback');fullscreenButton.textContent='⛶ Fullscreen';fullscreenMain.textContent='⛶ Fullscreen';resize();}});
 for(const [name,formatter,callback] of [['speed',v=>v.toFixed(1)+'×',v=>speed=v],['gap',v=>v+'°',v=>gap=v*Math.PI/180],['rotation',v=>v.toFixed(2)+'×',v=>rotation=v],['limit',v=>String(v),v=>{limit=v;balls=balls.slice(0,limit);updateStats();}]]){ui[name].addEventListener('input',e=>{const v=Number(e.target.value);callback(v);document.getElementById(name+'Out').textContent=formatter(v);});}
 window.addEventListener('resize',resize);resize();reset();requestAnimationFrame(animate);

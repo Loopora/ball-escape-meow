@@ -10,18 +10,19 @@
 <body>
   <main class="app">
     <header><h1>⚡ Ball Escape Loop</h1><p>Escape • Multiply • Repeat</p></header>
-    <div class="stage">
+    <div class="stage" id="stage">
       <canvas id="game" aria-label="Animated bouncing balls inside a rotating ring"></canvas>
       <div class="stats"><div><small>BALLS</small><strong id="count">1</strong></div><div class="right"><small>ESCAPES</small><strong id="escapes">0</strong></div></div>
+      <div class="stage-controls"><button id="stageToggle" type="button" aria-label="Pause game">⏸ Pause</button><button id="fullscreen" type="button" aria-label="Enter fullscreen">⛶ Fullscreen</button></div>
       <div class="stage-footer">ESCAPE · MULTIPLY · REPEAT</div>
     </div>
-    <div class="buttons"><button id="toggle">Pause</button><button id="reset" class="secondary">Restart</button></div>
+    <div class="buttons"><button id="toggle">Pause</button><button id="reset" class="secondary">Restart</button><button id="fullscreenMain" class="secondary">⛶ Fullscreen</button></div>
     <section class="settings">
       <label>Speed <output id="speedOut">1.0×</output><input id="speed" type="range" min="0.5" max="2.5" step="0.1" value="1"></label>
       <label>Gap size <output id="gapOut">25°</output><input id="gap" type="range" min="15" max="65" step="5" value="25"></label>
       <label>Rotation <output id="rotationOut">0.75×</output><input id="rotation" type="range" min="0" max="2" step="0.05" value="0.75"></label>
       <label>Ball limit <output id="limitOut">256</output><input id="limit" type="range" min="32" max="512" step="32" value="256"></label>
-      <label class="check"><input type="checkbox" id="sound"> 🐱 Meow on ball escape</label>
+      <label class="check"><input type="checkbox" id="sound" checked> 🐱 Meow on ball escape</label>
     </section>
     <p class="note">Tip: Use your phone's screen recorder for a vertical TikTok video. Enable the cat sound before recording. The meow plays when a ball escapes and multiplies.</p>
   </main>

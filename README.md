@@ -16,3 +16,8 @@ No backend or API keys are required. The ball limit keeps the animation usable o
 
 ## Cat sound
 Enable **Meow on ball escape**. A locally generated, original synthetic two-syllable meow plays when a ball escapes and multiplies. This is not a copy of a trending TikTok audio clip.
+
+## Updated controls
+- Meow sound is enabled by default (browser audio begins after first tap/click).
+- Pause/Resume is available below and inside the game area.
+- Fullscreen shows the game stage with its own Pause and Exit fullscreen controls.
